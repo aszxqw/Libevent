@@ -350,6 +350,11 @@ evhttp_response_needs_body(struct evhttp_request *req)
 		req->type != EVHTTP_REQ_HEAD);
 }
 
+static void
+evhttp_myread_cb(struct bufferevent *bev, void *ctx) {
+  printf("%s %d\n", __FILE__, __LINE__);
+}
+
 /** Helper: called after we've added some data to an evcon's bufferevent's
  * output buffer.  Sets the evconn's writing-is-done callback, and puts
  * the bufferevent into writing mode.
@@ -368,12 +373,12 @@ evhttp_write_buffer(struct evhttp_connection *evcon,
 	 * we only care about close detection.  (We don't disable reading,
 	 * since we *do* want to learn about any close events.) */
 	bufferevent_setcb(evcon->bufev,
-	    NULL, /*read*/
+	    evhttp_myread_cb, /*read*/
 	    evhttp_write_cb,
 	    evhttp_error_cb,
 	    evcon);
 
-	bufferevent_enable(evcon->bufev, EV_WRITE);
+	bufferevent_enable(evcon->bufev, EV_WRITE|EV_READ);
 }
 
 static void
